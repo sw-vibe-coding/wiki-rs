@@ -1,8 +1,8 @@
+use crate::context::{Route, StorageContext};
+use web_sys::HtmlTextAreaElement;
+use wiki_common::model::WikiPage;
 use yew::prelude::*;
 use yew_router::prelude::*;
-use web_sys::HtmlTextAreaElement;
-use crate::app::{Route, StorageContext};
-use wiki_common::model::WikiPage;
 
 #[derive(Properties, PartialEq)]
 pub struct Props {
@@ -38,7 +38,9 @@ pub fn page_edit(props: &Props) -> Html {
                 title: title.clone(),
                 content: (*content).clone(),
             });
-            navigator.push(&Route::ViewPage { title: title.clone() });
+            navigator.push(&Route::ViewPage {
+                title: title.clone(),
+            });
         })
     };
 
@@ -46,7 +48,9 @@ pub fn page_edit(props: &Props) -> Html {
         let title = title.clone();
         let navigator = navigator.clone();
         Callback::from(move |_| {
-            navigator.push(&Route::ViewPage { title: title.clone() });
+            navigator.push(&Route::ViewPage {
+                title: title.clone(),
+            });
         })
     };
 
@@ -55,7 +59,7 @@ pub fn page_edit(props: &Props) -> Html {
     html! {
         <div>
             <h1 class="page-title">
-                {if is_new { format!("Creating: {}", &title) } else { format!("Editing: {}", &title) }}
+                {if is_new { format!("Creating: {title}") } else { format!("Editing: {title}") }}
             </h1>
             <p class="edit-hint">{"Use [[PageName]] to link to other wiki pages. [[PageName|display text]] for aliased links."}</p>
             <textarea value={(*content).clone()} oninput={on_input}/>

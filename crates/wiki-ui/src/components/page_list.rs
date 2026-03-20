@@ -1,6 +1,6 @@
+use crate::context::{Route, StorageContext};
 use yew::prelude::*;
 use yew_router::prelude::*;
-use crate::app::{Route, StorageContext};
 
 #[function_component(PageList)]
 pub fn page_list() -> Html {

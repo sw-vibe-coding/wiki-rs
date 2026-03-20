@@ -2,5 +2,8 @@
 resolver = "3"
 members = [
     "crates/wiki-common",
-    "crates/wiki-frontend",
+    "crates/wiki-ui",
+    "crates/wiki-ephemeral",
+    "crates/wiki-browser-memory",
+    "crates/wiki-export-file",
 ]

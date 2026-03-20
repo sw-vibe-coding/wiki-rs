@@ -1,9 +1,9 @@
-use yew::prelude::*;
-use yew_router::prelude::*;
+use crate::context::{Route, StorageContext};
 use wasm_bindgen::JsCast;
 use web_sys::HtmlElement;
-use crate::app::{Route, StorageContext};
 use wiki_common::parser::render_wiki_content;
+use yew::prelude::*;
+use yew_router::prelude::*;
 
 #[derive(Properties, PartialEq)]
 pub struct Props {
@@ -31,20 +31,33 @@ pub fn page_view(props: &Props) -> Html {
                 for i in 0..links.length() {
                     let link = links.get(i).unwrap();
                     let link: HtmlElement = link.unchecked_into();
+
+                    // Red-link styling for missing pages
+                    if let Some(target_title) = link.get_attribute("data-wiki-link").as_deref()
+                        && !storage.has_page(target_title)
+                    {
+                        let _ = link.class_list().add_1("wiki-link-missing");
+                    }
+
                     let nav = navigator.clone();
                     let stor = storage.clone();
                     let closure = gloo::events::EventListener::new(&link, "click", move |e| {
                         e.prevent_default();
                         let target: HtmlElement = e.target().unwrap().unchecked_into();
-                        if let Some(wiki_target) = target.get_attribute("data-wiki-link").as_deref() {
+                        if let Some(wiki_target) = target.get_attribute("data-wiki-link").as_deref()
+                        {
                             if stor.has_page(wiki_target) {
-                                nav.push(&Route::ViewPage { title: wiki_target.to_string() });
+                                nav.push(&Route::ViewPage {
+                                    title: wiki_target.to_string(),
+                                });
                             } else {
-                                nav.push(&Route::EditPage { title: wiki_target.to_string() });
+                                nav.push(&Route::EditPage {
+                                    title: wiki_target.to_string(),
+                                });
                             }
                         }
                     });
-                    closure.forget(); // leak intentionally — cleaned up when component re-renders
+                    closure.forget();
                 }
             }
         });
@@ -56,7 +69,9 @@ pub fn page_view(props: &Props) -> Html {
         let navigator = navigator.clone();
         Callback::from(move |_| {
             storage.delete_page(&title);
-            navigator.push(&Route::ViewPage { title: "MainPage".to_string() });
+            navigator.push(&Route::ViewPage {
+                title: "MainPage".to_string(),
+            });
         })
     };
 

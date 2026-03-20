@@ -1,0 +1,12 @@
+[package]
+name = "wiki-browser-memory"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+wiki-common = { path = "../wiki-common" }
+wiki-ui = { path = "../wiki-ui" }
+wasm-logger = "0.2"
+gloo = { version = "0.11", features = ["storage"] }
+serde_json = "1"
+serde = { version = "1", features = ["derive"] }

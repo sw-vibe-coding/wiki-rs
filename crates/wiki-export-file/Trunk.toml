@@ -1,0 +1,6 @@
+[build]
+target = "index.html"
+dist = "../../dist/export-file"
+
+[serve]
+port = 7407

@@ -1,0 +1,6 @@
+[build]
+target = "index.html"
+dist = "../../dist/ephemeral"
+
+[serve]
+port = 7408
