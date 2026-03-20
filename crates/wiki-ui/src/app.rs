@@ -1,5 +1,5 @@
 use crate::components::{nav::Nav, page_edit::PageEdit, page_list::PageList, page_view::PageView};
-use crate::context::{Route, StorageContext};
+use crate::{Route, StorageContext};
 use std::rc::Rc;
 use wiki_common::storage::WikiStorage;
 use yew::prelude::*;

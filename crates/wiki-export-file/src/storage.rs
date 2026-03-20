@@ -5,7 +5,7 @@ use wiki_common::storage::WikiStorage;
 
 /// In-memory storage with export/import support via JSON files.
 pub struct ExportFileStorage {
-    pages: RefCell<HashMap<String, WikiPage>>,
+    pub(crate) pages: RefCell<HashMap<String, WikiPage>>,
 }
 
 impl ExportFileStorage {
@@ -21,22 +21,6 @@ impl ExportFileStorage {
         Self {
             pages: RefCell::new(pages),
         }
-    }
-
-    pub fn export_json(&self) -> String {
-        let pages: Vec<WikiPage> = self.pages.borrow().values().cloned().collect();
-        serde_json::to_string_pretty(&pages).unwrap_or_default()
-    }
-
-    pub fn import_json(&self, json: &str) -> Result<usize, String> {
-        let pages: Vec<WikiPage> =
-            serde_json::from_str(json).map_err(|e| format!("Invalid JSON: {e}"))?;
-        let count = pages.len();
-        let mut store = self.pages.borrow_mut();
-        for page in pages {
-            store.insert(page.title.clone(), page);
-        }
-        Ok(count)
     }
 }
 
