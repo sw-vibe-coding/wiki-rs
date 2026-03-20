@@ -6,4 +6,6 @@ members = [
     "crates/wiki-ephemeral",
     "crates/wiki-browser-memory",
     "crates/wiki-export-file",
+    "crates/wiki-server",
+    "crates/wiki-server-ui",
 ]

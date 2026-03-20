@@ -1,0 +1,4 @@
+so, how can we leverage Wiki implementation to:
+1. make them easier for AI to read or use as input data (wiki as RAG?)
+2. leverage AI to help format, organize, clarify, improve Wiki contents (smart wiki?)
+
