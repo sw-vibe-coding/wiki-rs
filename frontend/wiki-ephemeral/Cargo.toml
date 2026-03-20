@@ -1,0 +1,10 @@
+[package]
+name = "wiki-ephemeral"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+wiki-common = { path = "../../shared/wiki-common" }
+wiki-ui = { path = "../../ui/wiki-ui" }
+wiki-ui-app = { path = "../../ui/wiki-ui-app" }
+wasm-logger = "0.2"

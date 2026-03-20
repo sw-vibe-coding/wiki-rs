@@ -1,4 +1,3 @@
-pub mod app;
 pub mod components;
 
 use std::rc::Rc;

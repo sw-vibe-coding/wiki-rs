@@ -4,8 +4,9 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-wiki-common = { path = "../wiki-common" }
-wiki-ui = { path = "../wiki-ui" }
+wiki-common = { path = "../../shared/wiki-common" }
+wiki-ui = { path = "../../ui/wiki-ui" }
+wiki-ui-app = { path = "../../ui/wiki-ui-app" }
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"
 wasm-logger = "0.2"

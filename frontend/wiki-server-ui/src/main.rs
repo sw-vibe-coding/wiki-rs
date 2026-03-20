@@ -1,3 +1,4 @@
+mod rest_ops;
 mod storage;
 
 use std::rc::Rc;
@@ -12,7 +13,7 @@ async fn load_and_render() {
         storage.populate_cache(pages);
     }
 
-    wiki_ui::app::render_wiki(storage, "Server-backed (REST API)");
+    wiki_ui_app::render_wiki(storage, "Server-backed (REST API)");
 }
 
 async fn fetch_page_list() -> Option<Vec<String>> {

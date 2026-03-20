@@ -1759,6 +1759,7 @@ dependencies = [
  "wasm-logger",
  "wiki-common",
  "wiki-ui",
+ "wiki-ui-app",
 ]
 
 [[package]]
@@ -1776,6 +1777,7 @@ dependencies = [
  "wasm-logger",
  "wiki-common",
  "wiki-ui",
+ "wiki-ui-app",
 ]
 
 [[package]]
@@ -1827,6 +1829,7 @@ dependencies = [
  "wasm-logger",
  "wiki-common",
  "wiki-ui",
+ "wiki-ui-app",
 ]
 
 [[package]]
@@ -1838,6 +1841,16 @@ dependencies = [
  "wasm-bindgen",
  "web-sys",
  "wiki-common",
+ "yew",
+ "yew-router",
+]
+
+[[package]]
+name = "wiki-ui-app"
+version = "0.1.0"
+dependencies = [
+ "wiki-common",
+ "wiki-ui",
  "yew",
  "yew-router",
 ]

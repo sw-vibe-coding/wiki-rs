@@ -24,7 +24,7 @@ See [[WikiHistory]] for more.";
 fn main() {
     wasm_logger::init(wasm_logger::Config::default());
     let storage = Rc::new(BrowserMemoryStorage::new(MAIN_PAGE_CONTENT));
-    wiki_ui::app::render_wiki(
+    wiki_ui_app::render_wiki(
         storage,
         "Browser Memory (localStorage, persists across refreshes)",
     );

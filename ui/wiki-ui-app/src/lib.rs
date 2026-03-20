@@ -1,7 +1,9 @@
-use crate::components::{nav::Nav, page_edit::PageEdit, page_list::PageList, page_view::PageView};
-use crate::{Route, StorageContext};
 use std::rc::Rc;
 use wiki_common::storage::WikiStorage;
+use wiki_ui::components::{
+    nav::Nav, page_edit::PageEdit, page_list::PageList, page_view::PageView,
+};
+use wiki_ui::{Route, StorageContext};
 use yew::prelude::*;
 use yew_router::prelude::*;
 

@@ -1,27 +1,10 @@
-use async_trait::async_trait;
+use crate::storage::{AsyncWikiStorage, BackendKind};
 use std::path::Path;
 use std::sync::Arc;
 use wiki_common::model::WikiPage;
 
-/// Async storage backend trait for the wiki server.
-#[async_trait]
-pub trait AsyncWikiStorage: Send + Sync {
-    async fn get_page(&self, title: &str) -> Option<WikiPage>;
-    async fn save_page(&self, page: WikiPage);
-    async fn delete_page(&self, title: &str);
-    async fn list_pages(&self) -> Vec<String>;
-    async fn has_page(&self, title: &str) -> bool;
-}
-
-#[derive(Clone, Debug, clap::ValueEnum)]
-pub enum BackendKind {
-    File,
-    Db,
-    Git,
-}
-
 pub fn seed_main_page(backend: &BackendKind) -> WikiPage {
-    let storage_desc = match backend {
+    let desc = match backend {
         BackendKind::File => "**flat file storage**",
         BackendKind::Db => "a **SQLite database**",
         BackendKind::Git => "a **git repository**",
@@ -30,7 +13,7 @@ pub fn seed_main_page(backend: &BackendKind) -> WikiPage {
         title: "MainPage".to_string(),
         content: format!(
             "# Welcome to Wiki-RS!\n\n\
-             This wiki is backed by {storage_desc} on the server.\n\n\
+             This wiki is backed by {desc} on the server.\n\n\
              ## Getting Started\n\n\
              - Click a link like [[SandBox]] to create a new page\n\
              - Use `[[PageName]]` syntax to link between pages\n\

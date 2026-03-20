@@ -1,11 +1,12 @@
 [workspace]
 resolver = "3"
 members = [
-    "crates/wiki-common",
-    "crates/wiki-ui",
-    "crates/wiki-ephemeral",
-    "crates/wiki-browser-memory",
-    "crates/wiki-export-file",
-    "crates/wiki-server",
-    "crates/wiki-server-ui",
+    "shared/wiki-common",
+    "ui/wiki-ui",
+    "ui/wiki-ui-app",
+    "frontend/wiki-ephemeral",
+    "frontend/wiki-browser-memory",
+    "frontend/wiki-export-file",
+    "frontend/wiki-server-ui",
+    "backend/wiki-server",
 ]

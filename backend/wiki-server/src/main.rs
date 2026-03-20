@@ -1,5 +1,7 @@
 mod api;
 mod file_backend;
+mod file_ops;
+mod seed;
 mod storage;
 
 use clap::Parser;
@@ -66,7 +68,7 @@ async fn main() {
     tracing_subscriber::fmt::init();
     let cli = Cli::parse();
     let port = cli.port.unwrap_or_else(|| default_port(&cli.backend));
-    let store = storage::create_storage(cli.backend, &cli.data_dir).await;
+    let store = seed::create_storage(cli.backend, &cli.data_dir).await;
 
     let mut app = api::build_router(store).layer(CorsLayer::permissive());
 

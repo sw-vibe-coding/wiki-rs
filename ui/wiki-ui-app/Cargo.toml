@@ -1,0 +1,10 @@
+[package]
+name = "wiki-ui-app"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+wiki-common = { path = "../../shared/wiki-common" }
+wiki-ui = { path = "../wiki-ui" }
+yew = { version = "0.21", features = ["csr"] }
+yew-router = "0.18"
