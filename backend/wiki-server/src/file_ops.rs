@@ -1,6 +1,6 @@
 use crate::file_backend::FileStorage;
-use crate::storage::AsyncWikiStorage;
-use async_trait::async_trait;
+use wiki_common::async_storage::AsyncWikiStorage;
+use wiki_common::async_storage::async_trait;
 use wiki_common::model::WikiPage;
 
 #[async_trait]

@@ -1,6 +1,7 @@
-use crate::storage::{AsyncWikiStorage, BackendKind};
+use crate::storage::BackendKind;
 use std::path::Path;
 use std::sync::Arc;
+use wiki_common::async_storage::AsyncWikiStorage;
 use wiki_common::model::WikiPage;
 
 pub fn seed_main_page(backend: &BackendKind) -> WikiPage {
@@ -29,7 +30,11 @@ pub async fn create_storage(kind: BackendKind, data_dir: &Path) -> Arc<dyn Async
             let s = crate::file_backend::FileStorage::new(data_dir, Some(seed)).await;
             Arc::new(s)
         }
-        BackendKind::Db => todo!("SQLite backend not yet implemented"),
+        BackendKind::Db => {
+            let db_path = data_dir.join("wiki.db");
+            let s = wiki_server_db::DbStorage::new(&db_path, Some(seed));
+            Arc::new(s)
+        }
         BackendKind::Git => todo!("Git backend not yet implemented"),
     }
 }

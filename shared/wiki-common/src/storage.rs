@@ -1,10 +1,6 @@
 use crate::model::WikiPage;
 
-/// Storage backend trait for wiki pages.
-///
-/// All methods are synchronous since WASM is single-threaded.
-/// Server-backed implementations can use internal caching or
-/// block on HTTP requests via `gloo::net`.
+/// Sync storage backend trait for wiki pages (WASM frontends).
 pub trait WikiStorage {
     fn get_page(&self, title: &str) -> Option<WikiPage>;
     fn save_page(&self, page: WikiPage);

@@ -9,4 +9,5 @@ members = [
     "frontend/wiki-export-file",
     "frontend/wiki-server-ui",
     "backend/wiki-server",
+    "backend/wiki-server-db",
 ]

@@ -1,9 +1,9 @@
-use crate::storage::AsyncWikiStorage;
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
 use axum::routing::{delete, get, head, put};
 use axum::{Json, Router};
 use std::sync::Arc;
+use wiki_common::async_storage::AsyncWikiStorage;
 use wiki_common::model::WikiPage;
 
 type Storage = Arc<dyn AsyncWikiStorage>;
