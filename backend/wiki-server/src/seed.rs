@@ -10,17 +10,15 @@ pub fn seed_main_page(backend: &BackendKind) -> WikiPage {
         BackendKind::Db => "a **SQLite database**",
         BackendKind::Git => "a **git repository**",
     };
-    WikiPage {
-        title: "MainPage".to_string(),
-        content: format!(
-            "# Welcome to Wiki-RS!\n\n\
-             This wiki is backed by {desc} on the server.\n\n\
-             ## Getting Started\n\n\
-             - Click a link like [[SandBox]] to create a new page\n\
-             - Use `[[PageName]]` syntax to link between pages\n\
-             - Full **Markdown** supported"
-        ),
-    }
+    let content = format!(
+        "# Welcome to Wiki-RS!\n\n\
+         This wiki is backed by {desc} on the server.\n\n\
+         ## Getting Started\n\n\
+         - Click a link like [[SandBox]] to create a new page\n\
+         - Use `[[PageName]]` syntax to link between pages\n\
+         - Full **Markdown** supported"
+    );
+    WikiPage::new("MainPage", &content, wiki_common::time::now())
 }
 
 pub async fn create_storage(kind: BackendKind, data_dir: &Path) -> Arc<dyn AsyncWikiStorage> {

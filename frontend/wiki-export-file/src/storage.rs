@@ -11,13 +11,8 @@ pub struct ExportFileStorage {
 impl ExportFileStorage {
     pub fn new() -> Self {
         let mut pages = HashMap::new();
-        pages.insert(
-            "MainPage".to_string(),
-            WikiPage {
-                title: "MainPage".to_string(),
-                content: MAIN_PAGE_CONTENT.to_string(),
-            },
-        );
+        let seed = WikiPage::new("MainPage", MAIN_PAGE_CONTENT, wiki_common::time::now());
+        pages.insert("MainPage".to_string(), seed);
         Self {
             pages: RefCell::new(pages),
         }

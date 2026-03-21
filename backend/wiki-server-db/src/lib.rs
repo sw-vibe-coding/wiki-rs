@@ -16,7 +16,9 @@ impl DbStorage {
         conn.execute_batch(
             "CREATE TABLE IF NOT EXISTS pages (
                 title TEXT PRIMARY KEY,
-                content TEXT NOT NULL
+                content TEXT NOT NULL,
+                created_at INTEGER NOT NULL DEFAULT 0,
+                updated_at INTEGER NOT NULL DEFAULT 0
             )",
         )
         .expect("failed to create pages table");
@@ -26,29 +28,28 @@ impl DbStorage {
         };
 
         if let Some(page) = seed {
-            let exists: bool = storage
-                .conn
-                .lock()
-                .unwrap()
-                .query_row(
-                    "SELECT EXISTS(SELECT 1 FROM pages WHERE title = ?1)",
-                    [&page.title],
-                    |row| row.get(0),
-                )
-                .unwrap_or(false);
-            if !exists {
-                storage
-                    .conn
-                    .lock()
-                    .unwrap()
-                    .execute(
-                        "INSERT INTO pages (title, content) VALUES (?1, ?2)",
-                        [&page.title, &page.content],
-                    )
-                    .ok();
-            }
+            seed_if_missing(&storage, &page);
         }
 
         storage
+    }
+}
+
+fn seed_if_missing(storage: &DbStorage, page: &WikiPage) {
+    let conn = storage.conn.lock().unwrap();
+    let exists: bool = conn
+        .query_row(
+            "SELECT EXISTS(SELECT 1 FROM pages WHERE title = ?1)",
+            [&page.title],
+            |row| row.get(0),
+        )
+        .unwrap_or(false);
+    if !exists {
+        conn.execute(
+            "INSERT INTO pages (title, content, created_at, updated_at) \
+             VALUES (?1, ?2, ?3, ?4)",
+            rusqlite::params![page.title, page.content, page.created_at, page.updated_at],
+        )
+        .ok();
     }
 }

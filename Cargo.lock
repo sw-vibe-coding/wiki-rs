@@ -2153,6 +2153,7 @@ name = "wiki-common"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "js-sys",
  "pulldown-cmark",
  "serde",
 ]

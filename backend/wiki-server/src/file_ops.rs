@@ -6,12 +6,14 @@ use wiki_common::model::WikiPage;
 #[async_trait]
 impl AsyncWikiStorage for FileStorage {
     async fn get_page(&self, title: &str) -> Option<WikiPage> {
-        let content = tokio::fs::read_to_string(self.page_path(title))
-            .await
-            .ok()?;
+        let path = self.page_path(title);
+        let content = tokio::fs::read_to_string(&path).await.ok()?;
+        let mtime = wiki_common::time::file_mtime(&path);
         Some(WikiPage {
             title: title.to_string(),
             content,
+            created_at: mtime,
+            updated_at: mtime,
         })
     }
 

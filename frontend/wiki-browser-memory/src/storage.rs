@@ -21,10 +21,11 @@ impl BrowserMemoryStorage {
         };
 
         if storage.list_pages().is_empty() {
-            storage.save_page(WikiPage {
-                title: "MainPage".to_string(),
-                content: seed_content.to_string(),
-            });
+            storage.save_page(WikiPage::new(
+                "MainPage",
+                seed_content,
+                wiki_common::time::now(),
+            ));
         }
 
         storage

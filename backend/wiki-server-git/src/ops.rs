@@ -5,10 +5,14 @@ use wiki_common::model::WikiPage;
 #[async_trait]
 impl AsyncWikiStorage for GitStorage {
     async fn get_page(&self, title: &str) -> Option<WikiPage> {
-        let content = std::fs::read_to_string(self.page_path(title)).ok()?;
+        let path = self.page_path(title);
+        let content = std::fs::read_to_string(&path).ok()?;
+        let mtime = wiki_common::time::file_mtime(&path);
         Some(WikiPage {
             title: title.to_string(),
             content,
+            created_at: mtime,
+            updated_at: mtime,
         })
     }
 
