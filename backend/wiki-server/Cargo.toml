@@ -15,3 +15,4 @@ tower = "0.5"
 tracing = "0.1"
 tracing-subscriber = "0.3"
 wiki-server-db = { path = "../wiki-server-db" }
+wiki-server-git = { path = "../wiki-server-git" }

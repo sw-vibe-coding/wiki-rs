@@ -1,0 +1,8 @@
+[package]
+name = "wiki-server-git"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+wiki-common = { path = "../../shared/wiki-common", features = ["server"] }
+git2 = "0.20"

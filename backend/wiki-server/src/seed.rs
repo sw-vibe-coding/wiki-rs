@@ -35,6 +35,9 @@ pub async fn create_storage(kind: BackendKind, data_dir: &Path) -> Arc<dyn Async
             let s = wiki_server_db::DbStorage::new(&db_path, Some(seed));
             Arc::new(s)
         }
-        BackendKind::Git => todo!("Git backend not yet implemented"),
+        BackendKind::Git => {
+            let s = wiki_server_git::GitStorage::new(data_dir, Some(seed));
+            Arc::new(s)
+        }
     }
 }
