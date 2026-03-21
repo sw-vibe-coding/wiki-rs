@@ -1,7 +1,9 @@
 use crate::{Route, StorageContext};
 use wasm_bindgen::JsCast;
 use web_sys::HtmlElement;
+use wiki_common::aging;
 use wiki_common::parser::render_wiki_content;
+use wiki_common::time;
 use yew::prelude::*;
 use yew_router::prelude::*;
 
@@ -100,10 +102,12 @@ fn render_page(
         Some(page) => {
             let rendered = render_wiki_content(&page.content);
             let is_main = page.title == "MainPage";
+            let tier = aging::age_tier(page.updated_at, time::now());
+            let age_class = format!("page-content {}", tier.css_class());
             html! {
                 <div>
                     <h1 class="page-title">{&page.title}</h1>
-                    <div ref={content_ref}>
+                    <div ref={content_ref} class={age_class}>
                         {Html::from_html_unchecked(AttrValue::from(rendered))}
                     </div>
                     <hr/>
