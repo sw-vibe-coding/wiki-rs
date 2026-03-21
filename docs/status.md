@@ -1,0 +1,156 @@
+# Wiki-RS Project Status
+
+Last updated: 2026-03-21
+
+## Completed Features
+
+### 1. Six Storage Backends (all working)
+
+| Variant | Port | Crate | Storage | Status |
+|---------|------|-------|---------|--------|
+| Ephemeral | 7408 | frontend/wiki-ephemeral | In-memory HashMap | Done |
+| Browser Memory | 7409 | frontend/wiki-browser-memory | localStorage | Done |
+| Export/Import File | 7407 | frontend/wiki-export-file | JSON download/upload | Done |
+| Server File | 7400 | backend/wiki-server --backend file | Flat .md files | Done |
+| Server DB | 7401 | backend/wiki-server --backend db | SQLite (rusqlite) | Done |
+| Server Git | 7402 | backend/wiki-server --backend git | git commits (git2) | Done |
+
+### 2. Wiki Engine Features
+
+- Markdown rendering via pulldown-cmark (headings, bold, italic, lists, code)
+- Wiki links: `[[PageName]]` and `[[PageName|display text]]`
+- Red links for nonexistent pages (classic wiki behavior)
+- Click red link to create page
+- XSS protection (raw HTML filtered, wiki links in backticks not expanded)
+- Page delete (all pages except MainPage)
+- All Pages index
+
+### 3. Timestamps (created_at / updated_at)
+
+- WikiPage model has created_at and updated_at (u64 Unix seconds)
+- Platform-aware time::now() (js_sys for WASM, SystemTime for native)
+- Shared time::file_mtime() for file/git backends
+- DB backend stores/retrieves timestamps in schema
+- Page editor preserves created_at on updates
+
+### 4. Import/Conversion
+
+- VQWiki markup converter (shared/wiki-import)
+  - Headings, bold, italic, links, lists, code, horizontal rules
+  - 9 integration tests
+- TiddlyWiki importer (shared/wiki-import)
+  - HTML tiddler extraction from TiddlyWiki files
+  - Markup conversion (bold, italic, links with order reversal, headings)
+  - HTML entity decoding
+  - 8 integration tests
+
+### 5. Page Aging Visual Effects
+
+- 5 age tiers: Fresh, Recent, Stale, Old, Ancient
+- CSS effects: yellowing, parchment gradients, folded corners, stain effects
+- Based on updated_at timestamp
+- 7 integration tests
+
+## Remaining Items (from roadmap)
+
+### 5. Theming System -- NOT STARTED
+
+Goal: Configurable themes with different colors per wiki section or
+"sub-wiki". A sub-wiki could be a page name prefix (e.g., History/VQWiki).
+
+Planned approach:
+- CSS custom properties (--wiki-bg, --wiki-accent, etc.)
+- Theme definitions in a config structure
+- Sub-wiki detection by page title prefix
+- Different background colors per section
+
+### 6. Automated Test Suite -- NOT STARTED
+
+Goal: Playwright-based integration tests that:
+- Start each wiki variant
+- Create/edit/delete pages
+- Verify content renders correctly
+- Take screenshots for documentation
+- Server backend CRUD integration tests in Rust
+
+### 7. Demo Landing Page -- NOT STARTED
+
+Goal: A landing page that links to all 6 wiki variants with
+descriptions, screenshots, and live links. Could be a static HTML
+page or its own Yew app.
+
+## Architecture
+
+### Component Layout
+
+```
+shared/             2 crates
+  wiki-common/        model, parser, storage traits, aging, time
+  wiki-import/        VQWiki + TiddlyWiki importers
+
+ui/                 2 crates
+  wiki-ui/            shared Yew components (PageView, PageEdit, etc.)
+  wiki-ui-app/        App shell, routing, render_wiki()
+
+frontend/           4 crates
+  wiki-ephemeral/     port 7408
+  wiki-browser-memory/ port 7409
+  wiki-export-file/   port 7407
+  wiki-server-ui/     REST client (shared by all server backends)
+
+backend/            3 crates
+  wiki-server/        Axum REST server + CLI
+  wiki-server-db/     SQLite backend
+  wiki-server-git/    git backend
+```
+
+### Key Shared Code
+
+- AsyncWikiStorage trait: shared/wiki-common/src/async_storage.rs
+  (behind "server" feature flag)
+- WikiStorage trait: shared/wiki-common/src/storage.rs (sync, for WASM)
+- WikiPage model: shared/wiki-common/src/model.rs
+- Parser: shared/wiki-common/src/parser.rs
+- Time utilities: shared/wiki-common/src/time.rs
+- Age calculation: shared/wiki-common/src/aging.rs
+
+### Quality
+
+- sw-checklist: 69 passed, 0 failed
+- clippy: zero warnings (-D warnings)
+- No #[allow(clippy::...)] directives anywhere
+- 33 integration tests
+- All markdown validated
+- Favicons on all WASM crates
+- CLI --help with AI agent instructions section
+
+### Design Principles
+
+- Max 5 functions per module (headroom before 7 hard limit)
+- Max 5 modules per crate (headroom before 7 hard limit)
+- Split "up and out" when approaching limits
+- No code duplication across components (shared code in shared/)
+- No code duplication across crates (shared code in shared crate)
+- Each backend is its own crate for clean dependency graph
+
+## Running
+
+```bash
+# Client-side wikis
+cd frontend/wiki-ephemeral && trunk serve
+cd frontend/wiki-browser-memory && trunk serve
+cd frontend/wiki-export-file && trunk serve
+
+# Server-backed wikis (build frontend first)
+cd frontend/wiki-server-ui && trunk build
+cargo run -p wiki-server -- --backend file --data-dir ./data/file-wiki
+cargo run -p wiki-server -- --backend db --data-dir ./data/db-wiki
+cargo run -p wiki-server -- --backend git --data-dir ./work/bare-git
+
+# Quality checks
+cargo clippy --all-targets --all-features -- -D warnings
+cargo test --all
+cargo fmt --all
+cargo doc --all --no-deps
+sw-checklist
+```
