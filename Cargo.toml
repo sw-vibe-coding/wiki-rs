@@ -2,6 +2,7 @@
 resolver = "3"
 members = [
     "shared/wiki-common",
+    "shared/wiki-import",
     "ui/wiki-ui",
     "ui/wiki-ui-app",
     "frontend/wiki-ephemeral",
