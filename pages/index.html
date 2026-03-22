@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wiki-RS — Live Demo</title>
+<style>
+  :root { --accent: #0645ad; --bg: #fafafa; --card-bg: #fff; --border: #ddd; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg); color: #333; line-height: 1.6;
+  }
+  header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    color: #fff; text-align: center; padding: 48px 20px 40px;
+  }
+  header h1 { font-size: 2.4em; margin-bottom: 8px; }
+  header p { font-size: 1.1em; opacity: 0.85; max-width: 600px; margin: 0 auto; }
+  .tech-badges { margin-top: 16px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .badge {
+    display: inline-block; font-size: 0.8em; padding: 3px 10px;
+    border-radius: 12px; background: rgba(255,255,255,0.15); color: #ccc;
+  }
+  main { max-width: 1000px; margin: 0 auto; padding: 32px 20px; }
+  h2 { font-size: 1.5em; margin: 32px 0 16px; color: #1a1a2e; border-bottom: 2px solid var(--accent); padding-bottom: 6px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+  .card {
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px;
+    padding: 20px; transition: box-shadow 0.2s;
+  }
+  .card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+  .card h3 { margin-bottom: 6px; }
+  .card p { font-size: 0.95em; color: #555; margin-bottom: 12px; }
+  .card a.btn {
+    display: inline-block; padding: 6px 14px; background: var(--accent); color: #fff;
+    text-decoration: none; border-radius: 4px; font-size: 0.9em;
+  }
+  .card a.btn:hover { opacity: 0.85; }
+  .card a.btn-disabled {
+    background: #999; cursor: not-allowed;
+  }
+  .card .tag {
+    display: inline-block; font-size: 0.75em; padding: 2px 8px; border-radius: 3px;
+    margin-right: 4px;
+  }
+  .tag-live { background: #e8f5e9; color: #2e7d32; }
+  .tag-local { background: #fff3e0; color: #e65100; }
+  .features { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin-top: 8px; }
+  .feature { background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; padding: 14px; }
+  .feature strong { display: block; margin-bottom: 4px; }
+  .feature span { font-size: 0.9em; color: #555; }
+  .screenshots { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 8px; }
+  .screenshots figure { margin: 0; }
+  .screenshots img {
+    width: 100%; border: 1px solid var(--border); border-radius: 6px;
+    cursor: pointer; transition: transform 0.2s;
+  }
+  .screenshots img:hover { transform: scale(1.02); }
+  .screenshots figcaption { font-size: 0.85em; color: #666; margin-top: 4px; text-align: center; }
+  footer {
+    text-align: center; padding: 24px 20px; margin-top: 40px;
+    border-top: 1px solid var(--border); font-size: 0.85em; color: #888;
+  }
+  footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Wiki-RS</h1>
+  <p>A Rust-based wiki system with 6 storage backends, built with Yew (WASM) and Axum</p>
+  <div class="tech-badges">
+    <span class="badge">Rust</span>
+    <span class="badge">WebAssembly</span>
+    <span class="badge">Yew</span>
+    <span class="badge">Axum</span>
+    <span class="badge">SQLite</span>
+    <span class="badge">Git</span>
+  </div>
+</header>
+
+<main>
+
+<h2>Live Demos</h2>
+
+<div class="grid">
+  <div class="card">
+    <h3>Ephemeral Wiki</h3>
+    <span class="tag tag-live">Live</span>
+    <p>In-memory HashMap storage. Pages exist only during the browser session. Perfect for quick scratchpads.</p>
+    <a class="btn" href="ephemeral/">Try it</a>
+  </div>
+
+  <div class="card">
+    <h3>Browser Memory Wiki</h3>
+    <span class="tag tag-live">Live</span>
+    <p>Uses localStorage for persistence. Pages survive page refreshes and browser restarts.</p>
+    <a class="btn" href="browser-memory/">Try it</a>
+  </div>
+
+  <div class="card">
+    <h3>Export/Import File Wiki</h3>
+    <span class="tag tag-live">Live</span>
+    <p>Download your wiki as JSON, upload it later. Portable wiki you can carry as a file.</p>
+    <a class="btn" href="export-file/">Try it</a>
+  </div>
+</div>
+
+<h2>Server-Backed Variants</h2>
+<p style="color: #666; margin-bottom: 16px;">These require a running Rust server. Clone the repo and run locally.</p>
+
+<div class="grid">
+  <div class="card">
+    <h3>Server File Wiki</h3>
+    <span class="tag tag-local">Local only</span>
+    <p>Each page stored as a flat <code>.md</code> file on the server. Simple, inspectable, grep-friendly.</p>
+    <a class="btn btn-disabled">Port 7400</a>
+  </div>
+
+  <div class="card">
+    <h3>Server SQLite Wiki</h3>
+    <span class="tag tag-local">Local only</span>
+    <p>Pages stored in a SQLite database with full timestamp support. Fast queries, single-file DB.</p>
+    <a class="btn btn-disabled">Port 7401</a>
+  </div>
+
+  <div class="card">
+    <h3>Server Git Wiki</h3>
+    <span class="tag tag-local">Local only</span>
+    <p>Every save creates a git commit. Full version history of every page change, built on libgit2.</p>
+    <a class="btn btn-disabled">Port 7402</a>
+  </div>
+</div>
+
+<h2>Features</h2>
+
+<div class="features">
+  <div class="feature">
+    <strong>Markdown Rendering</strong>
+    <span>Headings, bold, italic, lists, code blocks via pulldown-cmark</span>
+  </div>
+  <div class="feature">
+    <strong>Wiki Links</strong>
+    <span><code>[[PageName]]</code> syntax with red links for missing pages</span>
+  </div>
+  <div class="feature">
+    <strong>Page Aging</strong>
+    <span>5 visual tiers from Fresh to Ancient based on last edit time</span>
+  </div>
+  <div class="feature">
+    <strong>Sub-wiki Theming</strong>
+    <span>CSS custom properties with 5 color themes by page prefix</span>
+  </div>
+  <div class="feature">
+    <strong>Import/Conversion</strong>
+    <span>VQWiki and TiddlyWiki markup converters</span>
+  </div>
+  <div class="feature">
+    <strong>XSS Protection</strong>
+    <span>Raw HTML filtered, wiki links in backticks not expanded</span>
+  </div>
+</div>
+
+<h2>Screenshots</h2>
+
+<div class="screenshots">
+  <figure>
+    <img src="screenshots/main-page.png" alt="Main page">
+    <figcaption>Main Page with wiki links</figcaption>
+  </figure>
+  <figure>
+    <img src="screenshots/editing.png" alt="Page editor">
+    <figcaption>Editing a page with Markdown</figcaption>
+  </figure>
+  <figure>
+    <img src="screenshots/rendered.png" alt="Saved page">
+    <figcaption>Rendered page with formatting</figcaption>
+  </figure>
+  <figure>
+    <img src="screenshots/all-pages.png" alt="All pages">
+    <figcaption>All Pages index</figcaption>
+  </figure>
+  <figure>
+    <img src="screenshots/red-link.png" alt="Red link">
+    <figcaption>Red link for nonexistent page</figcaption>
+  </figure>
+</div>
+
+<h2>Running Locally</h2>
+
+<div class="card" style="margin-top: 8px;">
+<pre style="font-size: 0.9em; overflow-x: auto; line-height: 1.5;"><code># Client-side wikis (requires trunk: cargo install trunk)
+cd frontend/wiki-ephemeral &amp;&amp; trunk serve      # port 7408
+cd frontend/wiki-browser-memory &amp;&amp; trunk serve  # port 7409
+cd frontend/wiki-export-file &amp;&amp; trunk serve     # port 7407
+
+# Server-backed wikis (build WASM frontend first)
+cd frontend/wiki-server-ui &amp;&amp; trunk build
+cargo run -p wiki-server -- --backend file --data-dir ./data/file   # port 7400
+cargo run -p wiki-server -- --backend db   --data-dir ./data/db     # port 7401
+cargo run -p wiki-server -- --backend git  --data-dir ./work/git    # port 7402</code></pre>
+</div>
+
+</main>
+
+<footer>
+  Wiki-RS &mdash; Copyright &copy; 2026 Software Wrighter LLC
+  &mdash; <a href="https://github.com/sw-vibe-coding/wiki-rs">Source on GitHub</a>
+</footer>
+
+</body>
+</html>
