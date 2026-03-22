@@ -30,13 +30,13 @@ pub struct AppProps {
 pub fn app(props: &AppProps) -> Html {
     html! {
         <ContextProvider<StorageContext> context={props.storage.clone()}>
-            <BrowserRouter>
+            <HashRouter>
                 if let Some(banner) = &props.banner {
                     <div class="storage-banner">{banner}</div>
                 }
                 <Nav />
                 <Switch<Route> render={switch} />
-            </BrowserRouter>
+            </HashRouter>
         </ContextProvider<StorageContext>>
     }
 }
