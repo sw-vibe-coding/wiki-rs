@@ -70,13 +70,14 @@ Last updated: 2026-03-21
 
 ## Remaining Items (from roadmap)
 
-### 8. Playwright Browser Tests -- NOT STARTED
+### 8. Playwright Browser Tests
 
-Goal: Playwright-based integration tests that:
-- Start each wiki variant
-- Create/edit/delete pages via browser
-- Verify content renders correctly
-- Take screenshots for documentation
+- Tested file backend (port 7400) via headless Chromium
+- Full CRUD flow: view MainPage, create SandBox, edit content, save, delete
+- Red link verification (deleted page shows red)
+- All Pages index verification
+- 7 screenshots saved to docs/screenshots/
+- Known limitation: page titles with `/` don't work (stripped from filenames, breaks router)
 
 ### 9. Demo Landing Page -- NOT STARTED
 
