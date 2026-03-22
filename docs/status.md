@@ -51,29 +51,34 @@ Last updated: 2026-03-21
 - Based on updated_at timestamp
 - 7 integration tests
 
+### 6. Theming System
+
+- CSS custom properties: --wiki-bg, --wiki-accent, --wiki-border, --wiki-nav-bg
+- 5 built-in themes: Default, Forest, Ocean, Sunset, Lavender
+- Sub-wiki detection by page title prefix (e.g., Tech/Rust → Ocean theme)
+- Case-insensitive prefix matching
+- Theme badge label on sub-wiki pages
+- 8 integration tests
+
+### 7. Server CRUD Integration Tests
+
+- Axum router tested via tower::ServiceExt (no HTTP server needed)
+- All 3 backends tested: File, SQLite, Git
+- Tests: list seeded pages, get page, 404 missing, PUT/GET roundtrip, DELETE, HEAD exists check, full CRUD lifecycle
+- 9 integration tests across 3 test files
+- Temp directories for test isolation
+
 ## Remaining Items (from roadmap)
 
-### 5. Theming System -- NOT STARTED
-
-Goal: Configurable themes with different colors per wiki section or
-"sub-wiki". A sub-wiki could be a page name prefix (e.g., History/VQWiki).
-
-Planned approach:
-- CSS custom properties (--wiki-bg, --wiki-accent, etc.)
-- Theme definitions in a config structure
-- Sub-wiki detection by page title prefix
-- Different background colors per section
-
-### 6. Automated Test Suite -- NOT STARTED
+### 8. Playwright Browser Tests -- NOT STARTED
 
 Goal: Playwright-based integration tests that:
 - Start each wiki variant
-- Create/edit/delete pages
+- Create/edit/delete pages via browser
 - Verify content renders correctly
 - Take screenshots for documentation
-- Server backend CRUD integration tests in Rust
 
-### 7. Demo Landing Page -- NOT STARTED
+### 9. Demo Landing Page -- NOT STARTED
 
 Goal: A landing page that links to all 6 wiki variants with
 descriptions, screenshots, and live links. Could be a static HTML
@@ -119,7 +124,7 @@ backend/            3 crates
 - sw-checklist: 69 passed, 0 failed
 - clippy: zero warnings (-D warnings)
 - No #[allow(clippy::...)] directives anywhere
-- 33 integration tests
+- 50 integration tests
 - All markdown validated
 - Favicons on all WASM crates
 - CLI --help with AI agent instructions section

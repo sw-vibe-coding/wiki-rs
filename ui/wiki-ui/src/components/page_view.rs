@@ -1,3 +1,4 @@
+use crate::theme;
 use crate::{Route, StorageContext};
 use wasm_bindgen::JsCast;
 use web_sys::HtmlElement;
@@ -104,9 +105,13 @@ fn render_page(
             let is_main = page.title == "MainPage";
             let tier = aging::age_tier(page.updated_at, time::now());
             let age_class = format!("page-content {}", tier.css_class());
+            let page_theme = theme::theme_for_page(&page.title);
+            let style = theme::theme_css_vars(page_theme);
+            let label = theme::sub_wiki_prefix(&page.title)
+                .map(|p| html! { <span class="theme-label">{p}</span> });
             html! {
-                <div>
-                    <h1 class="page-title">{&page.title}</h1>
+                <div {style}>
+                    <h1 class="page-title">{&page.title}{label}</h1>
                     <div ref={content_ref} class={age_class}>
                         {Html::from_html_unchecked(AttrValue::from(rendered))}
                     </div>

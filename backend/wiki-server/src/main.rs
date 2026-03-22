@@ -1,13 +1,7 @@
-mod api;
-mod file_backend;
-mod file_ops;
-mod seed;
-mod storage;
-
 use clap::Parser;
 use std::path::PathBuf;
-use storage::BackendKind;
 use tower_http::cors::CorsLayer;
+use wiki_server::storage::BackendKind;
 
 const VERSION_INFO: &str = "\
 wiki-server 0.1.0
@@ -68,9 +62,9 @@ async fn main() {
     tracing_subscriber::fmt::init();
     let cli = Cli::parse();
     let port = cli.port.unwrap_or_else(|| default_port(&cli.backend));
-    let store = seed::create_storage(cli.backend, &cli.data_dir).await;
+    let store = wiki_server::seed::create_storage(cli.backend, &cli.data_dir).await;
 
-    let mut app = api::build_router(store).layer(CorsLayer::permissive());
+    let mut app = wiki_server::api::build_router(store).layer(CorsLayer::permissive());
 
     if cli.static_dir.exists() {
         let serve = tower_http::services::ServeDir::new(&cli.static_dir).fallback(

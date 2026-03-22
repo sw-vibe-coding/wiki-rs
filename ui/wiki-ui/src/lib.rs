@@ -1,4 +1,5 @@
 pub mod components;
+pub mod theme;
 
 use std::rc::Rc;
 use wiki_common::storage::WikiStorage;
