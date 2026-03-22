@@ -79,11 +79,15 @@ Last updated: 2026-03-21
 - 7 screenshots saved to docs/screenshots/
 - Known limitation: page titles with `/` don't work (stripped from filenames, breaks router)
 
-### 9. Demo Landing Page -- NOT STARTED
+### 9. Demo Landing Page
 
-Goal: A landing page that links to all 6 wiki variants with
-descriptions, screenshots, and live links. Could be a static HTML
-page or its own Yew app.
+- Static HTML page at docs/demo/index.html (no build step)
+- Cards for all 6 wiki variants with ports, descriptions, live links
+- Client-side / Server-backed tags
+- Features grid (markdown, wiki links, aging, theming, import, XSS)
+- Embedded screenshots from Playwright tests
+- Running instructions with copy-pasteable commands
+- Footer with copyright
 
 ## Architecture
 
