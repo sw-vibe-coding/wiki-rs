@@ -12,4 +12,5 @@ members = [
     "backend/wiki-server",
     "backend/wiki-server-db",
     "backend/wiki-server-git",
+    "tools/wiki-import-cli",
 ]

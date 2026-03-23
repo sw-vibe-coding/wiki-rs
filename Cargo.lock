@@ -2230,6 +2230,14 @@ name = "wiki-import"
 version = "0.1.0"
 
 [[package]]
+name = "wiki-import-cli"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "wiki-import",
+]
+
+[[package]]
 name = "wiki-server"
 version = "0.1.0"
 dependencies = [
