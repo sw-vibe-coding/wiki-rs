@@ -5,7 +5,7 @@ use wiki_server::storage::BackendKind;
 
 const VERSION_INFO: &str = "\
 wiki-server 0.1.0
-Copyright (c) 2026 Software Wrighter LLC
+Copyright (c) 2026 Michael A Wright
 License: See LICENSE file
 Repository: https://github.com/sw-vibe-coding/wiki-rs
 Build Host: local
