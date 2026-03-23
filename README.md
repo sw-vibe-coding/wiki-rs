@@ -9,13 +9,13 @@ client-side wikis in your browser, no installation needed.
 
 ## Screenshots
 
-| Main Page | Editor | Rendered |
-|-----------|--------|----------|
-| ![Main Page](docs/images/main-page.png) | ![Editor](docs/images/editing.png) | ![Rendered](docs/images/rendered.png) |
+| Landing Page | Ephemeral Wiki | Browser Memory Wiki |
+|--------------|---------------|---------------------|
+| ![Landing](docs/images/live-demo.png?ts=1774221179362) | ![Ephemeral](docs/images/live-ephemeral.png?ts=1774221179362) | ![Browser Memory](docs/images/live-browser-memory.png?ts=1774221179362) |
 
-| All Pages | Red Links |
-|-----------|-----------|
-| ![All Pages](docs/images/all-pages.png) | ![Red Links](docs/images/red-link.png) |
+| Main Page | Editor | Red Links |
+|-----------|--------|-----------|
+| ![Main Page](docs/images/main-page.png?ts=1774221179362) | ![Editor](docs/images/editing.png?ts=1774221179362) | ![Red Links](docs/images/red-link.png?ts=1774221179362) |
 
 ## Wiki Variants
 
