@@ -87,6 +87,21 @@ Last updated: 2026-03-26
 - Eventually consistent git history
 - Graceful shutdown drains commit queue via Rust drop semantics
 
+### 10. Wiki Sync to GitHub Wiki
+
+- CLI tool `wiki-sync-gh` exports wiki-rs pages to a GitHub Wiki git repo
+- Fetches all pages via REST API, writes as `.md` files, commits and pushes
+- Handles updates, deletions (removes stale `.md` files), and idempotent re-runs
+- Supports custom commit messages, author identity, and work directory
+- Uses git CLI for SSH key/credential compatibility
+- Designed for cron or manual use after agent convergence
+
+### 11. Agent API Guide
+
+- `docs/agent-cas-wiki.md` — copy-paste instructions for AI agents
+- Covers full API reference, CAS workflow, conflict handling, coordination rules
+- Designed to be included in agent system prompts
+
 ## Remaining Items (from roadmap)
 
 ### 8. Playwright Browser Tests
