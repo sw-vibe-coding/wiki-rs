@@ -9,3 +9,6 @@ pub mod async_storage;
 
 #[cfg(feature = "server")]
 pub mod etag;
+
+#[cfg(feature = "server")]
+pub mod patch;

@@ -262,6 +262,245 @@ async fn unconditional_put_still_works() {
 }
 
 #[tokio::test]
+async fn patch_replaces_text() {
+    let dir = tempfile::tempdir().unwrap();
+    let storage = create_storage(BackendKind::File, dir.path()).await;
+    let app = build_router(storage);
+
+    // GET to obtain ETag
+    let resp = app
+        .clone()
+        .oneshot(
+            Request::get("/api/pages/MainPage")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    let etag = resp
+        .headers()
+        .get("ETag")
+        .unwrap()
+        .to_str()
+        .unwrap()
+        .to_string();
+    let body = resp.into_body().collect().await.unwrap().to_bytes();
+    let page: WikiPage = serde_json::from_slice(&body).unwrap();
+    assert!(page.content.contains("flat file storage"));
+
+    // PATCH to replace text — etag in JSON must include the HTTP quotes
+    let patch_body = format!(
+        r#"{{"etag": "\"{}\"", "ops": [{{"op": "replace", "match": "flat file storage", "replace": "PATCHED storage"}}]}}"#,
+        etag.trim_matches('"')
+    );
+    let resp = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::PATCH)
+                .uri("/api/pages/MainPage")
+                .header("content-type", "application/json")
+                .body(Body::from(patch_body))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(resp.status(), StatusCode::OK);
+    assert!(resp.headers().get("ETag").is_some());
+
+    // Verify content changed
+    let resp = app
+        .oneshot(
+            Request::get("/api/pages/MainPage")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    let body = resp.into_body().collect().await.unwrap().to_bytes();
+    let fetched: WikiPage = serde_json::from_slice(&body).unwrap();
+    assert!(fetched.content.contains("PATCHED storage"));
+    assert!(!fetched.content.contains("flat file storage"));
+}
+
+#[tokio::test]
+async fn patch_fails_with_stale_etag() {
+    let dir = tempfile::tempdir().unwrap();
+    let storage = create_storage(BackendKind::File, dir.path()).await;
+    let app = build_router(storage);
+
+    let patch_body =
+        r#"{"etag": "\"stale\"", "ops": [{"op": "replace", "match": "x", "replace": "y"}]}"#;
+    let resp = app
+        .oneshot(
+            Request::builder()
+                .method(Method::PATCH)
+                .uri("/api/pages/MainPage")
+                .header("content-type", "application/json")
+                .body(Body::from(patch_body))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(resp.status(), StatusCode::CONFLICT);
+}
+
+#[tokio::test]
+async fn patch_fails_with_missing_match() {
+    let dir = tempfile::tempdir().unwrap();
+    let storage = create_storage(BackendKind::File, dir.path()).await;
+    let app = build_router(storage);
+
+    // GET ETag
+    let resp = app
+        .clone()
+        .oneshot(
+            Request::get("/api/pages/MainPage")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    let etag = resp
+        .headers()
+        .get("ETag")
+        .unwrap()
+        .to_str()
+        .unwrap()
+        .to_string();
+
+    let patch_body = format!(
+        r#"{{"etag": "\"{}\"", "ops": [{{"op": "replace", "match": "NONEXISTENT TEXT", "replace": "y"}}]}}"#,
+        etag.trim_matches('"')
+    );
+    let resp = app
+        .oneshot(
+            Request::builder()
+                .method(Method::PATCH)
+                .uri("/api/pages/MainPage")
+                .header("content-type", "application/json")
+                .body(Body::from(patch_body))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(resp.status(), StatusCode::UNPROCESSABLE_ENTITY);
+    let body = resp.into_body().collect().await.unwrap().to_bytes();
+    let err: serde_json::Value = serde_json::from_slice(&body).unwrap();
+    assert_eq!(err["error"], "match_not_found");
+    assert_eq!(err["op_index"], 0);
+}
+
+#[tokio::test]
+async fn patch_append_after_works() {
+    let dir = tempfile::tempdir().unwrap();
+    let storage = create_storage(BackendKind::File, dir.path()).await;
+    let app = build_router(storage);
+
+    let resp = app
+        .clone()
+        .oneshot(
+            Request::get("/api/pages/MainPage")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    let etag = resp
+        .headers()
+        .get("ETag")
+        .unwrap()
+        .to_str()
+        .unwrap()
+        .to_string();
+
+    let patch_body = format!(
+        r#"{{"etag": "\"{}\"", "ops": [{{"op": "append_after", "match": "Getting Started", "text": "- New item added by PATCH"}}]}}"#,
+        etag.trim_matches('"')
+    );
+    let resp = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::PATCH)
+                .uri("/api/pages/MainPage")
+                .header("content-type", "application/json")
+                .body(Body::from(patch_body))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(resp.status(), StatusCode::OK);
+
+    let resp = app
+        .oneshot(
+            Request::get("/api/pages/MainPage")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    let body = resp.into_body().collect().await.unwrap().to_bytes();
+    let fetched: WikiPage = serde_json::from_slice(&body).unwrap();
+    assert!(fetched.content.contains("New item added by PATCH"));
+}
+
+#[tokio::test]
+async fn patch_multiple_ops() {
+    let dir = tempfile::tempdir().unwrap();
+    let storage = create_storage(BackendKind::File, dir.path()).await;
+    let app = build_router(storage);
+
+    let resp = app
+        .clone()
+        .oneshot(
+            Request::get("/api/pages/MainPage")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    let etag = resp
+        .headers()
+        .get("ETag")
+        .unwrap()
+        .to_str()
+        .unwrap()
+        .to_string();
+
+    let patch_body = format!(
+        r#"{{"etag": "\"{}\"", "ops": [{{"op": "replace", "match": "Welcome", "replace": "Greetings"}}, {{"op": "replace", "match": "Greetings", "replace": "Hello"}}]}}"#,
+        etag.trim_matches('"')
+    );
+    let resp = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::PATCH)
+                .uri("/api/pages/MainPage")
+                .header("content-type", "application/json")
+                .body(Body::from(patch_body))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(resp.status(), StatusCode::OK);
+
+    let resp = app
+        .oneshot(
+            Request::get("/api/pages/MainPage")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    let body = resp.into_body().collect().await.unwrap().to_bytes();
+    let fetched: WikiPage = serde_json::from_slice(&body).unwrap();
+    assert!(fetched.content.contains("Hello"));
+    assert!(!fetched.content.contains("Welcome"));
+}
+
+#[tokio::test]
 async fn delete_page_removes_it() {
     let dir = tempfile::tempdir().unwrap();
     let storage = create_storage(BackendKind::File, dir.path()).await;

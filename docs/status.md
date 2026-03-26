@@ -79,6 +79,16 @@ Last updated: 2026-03-26
 - Protocol: GET → edit locally → PUT with If-Match → retry on 409
 - 10 new CAS tests across all 3 backends
 
+### 8b. PATCH API (Section-Level CAS)
+
+- PATCH /api/pages/{title} for targeted, line-level edits
+- Four operations: replace, append_after, insert_before, delete
+- Match strings must exist in page content or 422 is returned
+- Prevents semantic overwrites where an agent reads then rewrites entire sections
+- Operations apply sequentially; each op sees result of previous
+- Same ETag-based concurrency as PUT (409 on mismatch)
+- 8 unit tests + 9 integration tests across 3 backends
+
 ### 9. Journaled Git Backend
 
 - JournaledGitStorage wraps git backend for fast CAS coordination
@@ -165,7 +175,7 @@ backend/            3 crates
 - sw-checklist: 69 passed, 0 failed
 - clippy: zero warnings (-D warnings)
 - No #[allow(clippy::...)] directives anywhere
-- 63 integration tests
+- 80 integration tests
 - All markdown validated
 - Favicons on all WASM crates
 - CLI --help with AI agent instructions section

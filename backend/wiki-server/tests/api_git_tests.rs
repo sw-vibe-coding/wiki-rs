@@ -242,3 +242,98 @@ async fn cas_put_fails_with_stale_etag() {
         "changed by someone else"
     );
 }
+
+#[tokio::test]
+async fn patch_replaces_text() {
+    let dir = tempfile::tempdir().unwrap();
+    let storage = create_storage(BackendKind::Git, dir.path()).await;
+    let app = build_router(storage);
+
+    let resp = app
+        .clone()
+        .oneshot(
+            Request::get("/api/pages/MainPage")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    let etag = resp
+        .headers()
+        .get("ETag")
+        .unwrap()
+        .to_str()
+        .unwrap()
+        .to_string();
+
+    let patch_body = format!(
+        r#"{{"etag": "\"{}\"", "ops": [{{"op": "replace", "match": "git repository", "replace": "PATCHED"}}]}}"#,
+        etag.trim_matches('"')
+    );
+    let resp = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::PATCH)
+                .uri("/api/pages/MainPage")
+                .header("content-type", "application/json")
+                .body(Body::from(patch_body))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(resp.status(), StatusCode::OK);
+
+    let resp = app
+        .oneshot(
+            Request::get("/api/pages/MainPage")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    let body = resp.into_body().collect().await.unwrap().to_bytes();
+    let fetched: WikiPage = serde_json::from_slice(&body).unwrap();
+    assert!(fetched.content.contains("PATCHED"));
+}
+
+#[tokio::test]
+async fn patch_fails_with_missing_match() {
+    let dir = tempfile::tempdir().unwrap();
+    let storage = create_storage(BackendKind::Git, dir.path()).await;
+    let app = build_router(storage);
+
+    let resp = app
+        .clone()
+        .oneshot(
+            Request::get("/api/pages/MainPage")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    let etag = resp
+        .headers()
+        .get("ETag")
+        .unwrap()
+        .to_str()
+        .unwrap()
+        .to_string();
+
+    let patch_body = format!(
+        r#"{{"etag": "\"{}\"", "ops": [{{"op": "replace", "match": "NONEXISTENT", "replace": "y"}}]}}"#,
+        etag.trim_matches('"')
+    );
+    let resp = app
+        .oneshot(
+            Request::builder()
+                .method(Method::PATCH)
+                .uri("/api/pages/MainPage")
+                .header("content-type", "application/json")
+                .body(Body::from(patch_body))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(resp.status(), StatusCode::UNPROCESSABLE_ENTITY);
+}

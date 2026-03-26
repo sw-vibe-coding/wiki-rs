@@ -2,7 +2,7 @@ use axum::body::Body;
 use axum::extract::{Path, State};
 use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
-use axum::routing::{delete, get, head, put};
+use axum::routing::{delete, get, head, patch, put};
 use axum::{Json, Router};
 use dashmap::DashMap;
 use serde::Serialize;
@@ -11,6 +11,7 @@ use tokio::sync::Mutex;
 use wiki_common::async_storage::AsyncWikiStorage;
 use wiki_common::etag::content_etag;
 use wiki_common::model::WikiPage;
+use wiki_common::patch::PatchRequest;
 
 #[derive(Clone)]
 struct AppState {
@@ -27,6 +28,7 @@ pub fn build_router(storage: Arc<dyn AsyncWikiStorage>) -> Router {
         .route("/api/pages", get(list_pages))
         .route("/api/pages/{title}", get(get_page))
         .route("/api/pages/{title}", put(save_page))
+        .route("/api/pages/{title}", patch(patch_page))
         .route("/api/pages/{title}", delete(delete_page))
         .route("/api/pages/{title}", head(has_page))
         .with_state(state)
@@ -114,6 +116,69 @@ async fn save_page(
     }
 }
 
+async fn patch_page(
+    State(s): State<AppState>,
+    Path(title): Path<String>,
+    Json(req): Json<PatchRequest>,
+) -> Response {
+    let lock = s
+        .page_locks
+        .entry(title.clone())
+        .or_insert_with(|| Arc::new(Mutex::new(())))
+        .clone();
+    let _guard = lock.lock().await;
+
+    let Some(page) = s.storage.get_page(&title).await else {
+        return StatusCode::NOT_FOUND.into_response();
+    };
+
+    let current_etag = content_etag(&page.content);
+    if current_etag != req.etag {
+        let conflict = ConflictResponse {
+            error: "conflict".to_string(),
+            message: "Page was modified by another writer".to_string(),
+            current_page: Some(page),
+            current_etag: current_etag.clone(),
+        };
+        return Response::builder()
+            .status(StatusCode::CONFLICT)
+            .header("ETag", &current_etag)
+            .header("Content-Type", "application/json")
+            .body(Body::from(serde_json::to_vec(&conflict).unwrap()))
+            .unwrap();
+    }
+
+    match wiki_common::patch::apply_ops(&page.content, &req.ops) {
+        Ok(patched) => {
+            let new_etag = content_etag(&patched);
+            let mut updated = page;
+            updated.content = patched;
+            updated.updated_at = wiki_common::time::now();
+            s.storage.save_page(updated).await;
+            Response::builder()
+                .status(StatusCode::OK)
+                .header("ETag", &new_etag)
+                .body(Body::empty())
+                .unwrap()
+        }
+        Err(e) => {
+            let resp = MatchNotFoundResponse {
+                error: "match_not_found".to_string(),
+                message: format!("Op {} match string not found in page content", e.op_index),
+                op_index: e.op_index,
+                match_str: e.match_str,
+                current_page: Some(page),
+                current_etag,
+            };
+            Response::builder()
+                .status(StatusCode::UNPROCESSABLE_ENTITY)
+                .header("Content-Type", "application/json")
+                .body(Body::from(serde_json::to_vec(&resp).unwrap()))
+                .unwrap()
+        }
+    }
+}
+
 async fn delete_page(State(s): State<AppState>, Path(title): Path<String>) -> StatusCode {
     s.storage.delete_page(&title).await;
     StatusCode::OK
@@ -134,6 +199,17 @@ async fn has_page(State(s): State<AppState>, Path(title): Path<String>) -> Respo
 struct ConflictResponse {
     error: String,
     message: String,
+    current_page: Option<WikiPage>,
+    current_etag: String,
+}
+
+#[derive(Serialize)]
+struct MatchNotFoundResponse {
+    error: String,
+    message: String,
+    op_index: usize,
+    #[serde(rename = "match")]
+    match_str: String,
     current_page: Option<WikiPage>,
     current_etag: String,
 }
