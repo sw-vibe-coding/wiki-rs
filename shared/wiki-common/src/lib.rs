@@ -6,3 +6,6 @@ pub mod time;
 
 #[cfg(feature = "server")]
 pub mod async_storage;
+
+#[cfg(feature = "server")]
+pub mod etag;

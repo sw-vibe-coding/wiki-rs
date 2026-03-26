@@ -1,56 +1,139 @@
+use axum::body::Body;
 use axum::extract::{Path, State};
-use axum::http::StatusCode;
+use axum::http::{HeaderMap, StatusCode};
+use axum::response::{IntoResponse, Response};
 use axum::routing::{delete, get, head, put};
 use axum::{Json, Router};
+use dashmap::DashMap;
+use serde::Serialize;
 use std::sync::Arc;
+use tokio::sync::Mutex;
 use wiki_common::async_storage::AsyncWikiStorage;
+use wiki_common::etag::content_etag;
 use wiki_common::model::WikiPage;
 
-type Storage = Arc<dyn AsyncWikiStorage>;
+#[derive(Clone)]
+struct AppState {
+    storage: Arc<dyn AsyncWikiStorage>,
+    page_locks: Arc<DashMap<String, Arc<Mutex<()>>>>,
+}
 
-pub fn build_router(storage: Storage) -> Router {
+pub fn build_router(storage: Arc<dyn AsyncWikiStorage>) -> Router {
+    let state = AppState {
+        storage,
+        page_locks: Arc::new(DashMap::new()),
+    };
     Router::new()
         .route("/api/pages", get(list_pages))
         .route("/api/pages/{title}", get(get_page))
         .route("/api/pages/{title}", put(save_page))
         .route("/api/pages/{title}", delete(delete_page))
         .route("/api/pages/{title}", head(has_page))
-        .with_state(storage)
+        .with_state(state)
 }
 
-async fn list_pages(State(s): State<Storage>) -> Json<Vec<String>> {
-    Json(s.list_pages().await)
+async fn list_pages(State(s): State<AppState>) -> Json<Vec<String>> {
+    Json(s.storage.list_pages().await)
 }
 
 async fn get_page(
-    State(s): State<Storage>,
+    State(s): State<AppState>,
     Path(title): Path<String>,
-) -> Result<Json<WikiPage>, StatusCode> {
-    s.get_page(&title)
+) -> Result<Response, StatusCode> {
+    let page = s
+        .storage
+        .get_page(&title)
         .await
-        .map(Json)
-        .ok_or(StatusCode::NOT_FOUND)
+        .ok_or(StatusCode::NOT_FOUND)?;
+    let etag = content_etag(&page.content);
+    let body = serde_json::to_vec(&page).unwrap();
+    Ok(Response::builder()
+        .header("ETag", &etag)
+        .header("Content-Type", "application/json")
+        .body(Body::from(body))
+        .unwrap())
 }
 
 async fn save_page(
-    State(s): State<Storage>,
+    State(s): State<AppState>,
     Path(title): Path<String>,
+    headers: HeaderMap,
     Json(mut page): Json<WikiPage>,
-) -> StatusCode {
-    page.title = title;
-    s.save_page(page).await;
-    StatusCode::OK
-}
+) -> Response {
+    page.title = title.clone();
 
-async fn delete_page(State(s): State<Storage>, Path(title): Path<String>) -> StatusCode {
-    s.delete_page(&title).await;
-    StatusCode::OK
-}
+    let if_match = headers
+        .get("If-Match")
+        .and_then(|v| v.to_str().ok())
+        .map(|s| s.to_string());
 
-async fn has_page(State(s): State<Storage>, Path(title): Path<String>) -> StatusCode {
-    if s.has_page(&title).await {
-        StatusCode::OK
-    } else {
-        StatusCode::NOT_FOUND
+    match if_match {
+        None => {
+            // Unconditional write (backward compatible)
+            s.storage.save_page(page).await;
+            StatusCode::OK.into_response()
+        }
+        Some(expected_etag) => {
+            // CAS: acquire per-page lock
+            let lock = s
+                .page_locks
+                .entry(title.clone())
+                .or_insert_with(|| Arc::new(Mutex::new(())))
+                .clone();
+            let _guard = lock.lock().await;
+
+            let current = s.storage.get_page(&title).await;
+            let current_etag = current
+                .as_ref()
+                .map(|p| content_etag(&p.content))
+                .unwrap_or_else(|| "\"\"".to_string());
+
+            if current_etag == expected_etag {
+                let new_etag = content_etag(&page.content);
+                s.storage.save_page(page).await;
+                Response::builder()
+                    .status(StatusCode::OK)
+                    .header("ETag", &new_etag)
+                    .body(Body::empty())
+                    .unwrap()
+            } else {
+                let conflict = ConflictResponse {
+                    error: "conflict".to_string(),
+                    message: "Page was modified by another writer".to_string(),
+                    current_page: current,
+                    current_etag: current_etag.clone(),
+                };
+                Response::builder()
+                    .status(StatusCode::CONFLICT)
+                    .header("ETag", &current_etag)
+                    .header("Content-Type", "application/json")
+                    .body(Body::from(serde_json::to_vec(&conflict).unwrap()))
+                    .unwrap()
+            }
+        }
     }
+}
+
+async fn delete_page(State(s): State<AppState>, Path(title): Path<String>) -> StatusCode {
+    s.storage.delete_page(&title).await;
+    StatusCode::OK
+}
+
+async fn has_page(State(s): State<AppState>, Path(title): Path<String>) -> Response {
+    match s.storage.get_page(&title).await {
+        Some(page) => Response::builder()
+            .status(StatusCode::OK)
+            .header("ETag", content_etag(&page.content))
+            .body(Body::empty())
+            .unwrap(),
+        None => StatusCode::NOT_FOUND.into_response(),
+    }
+}
+
+#[derive(Serialize)]
+struct ConflictResponse {
+    error: String,
+    message: String,
+    current_page: Option<WikiPage>,
+    current_etag: String,
 }

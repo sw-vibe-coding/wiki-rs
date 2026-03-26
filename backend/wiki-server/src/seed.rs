@@ -34,7 +34,7 @@ pub async fn create_storage(kind: BackendKind, data_dir: &Path) -> Arc<dyn Async
             Arc::new(s)
         }
         BackendKind::Git => {
-            let s = wiki_server_git::GitStorage::new(data_dir, Some(seed));
+            let s = wiki_server_git::journal::JournaledGitStorage::new(data_dir, Some(seed));
             Arc::new(s)
         }
     }

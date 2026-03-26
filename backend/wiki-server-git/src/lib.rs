@@ -1,3 +1,4 @@
+pub mod journal;
 mod ops;
 
 use git2::{Repository, Signature};

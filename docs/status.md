@@ -1,6 +1,6 @@
 # Wiki-RS Project Status
 
-Last updated: 2026-03-21
+Last updated: 2026-03-26
 
 ## Completed Features
 
@@ -68,6 +68,25 @@ Last updated: 2026-03-21
 - 9 integration tests across 3 test files
 - Temp directories for test isolation
 
+### 8. CAS (Compare-and-Swap) Concurrency Control
+
+- Optimistic concurrency for multi-agent coordination
+- HTTP ETag header on GET/HEAD responses (SHA-256 of content)
+- If-Match header on PUT for conditional writes
+- 409 Conflict response includes current page + current ETag (no extra round-trip)
+- Per-page locking via DashMap for CAS atomicity
+- Unconditional PUT still works (backward compatible)
+- Protocol: GET → edit locally → PUT with If-Match → retry on 409
+- 10 new CAS tests across all 3 backends
+
+### 9. Journaled Git Backend
+
+- JournaledGitStorage wraps git backend for fast CAS coordination
+- Reads/writes hit filesystem directly (sub-millisecond)
+- Git commits queued via tokio::mpsc to background worker
+- Eventually consistent git history
+- Graceful shutdown drains commit queue via Rust drop semantics
+
 ## Remaining Items (from roadmap)
 
 ### 8. Playwright Browser Tests
@@ -123,13 +142,15 @@ backend/            3 crates
 - Parser: shared/wiki-common/src/parser.rs
 - Time utilities: shared/wiki-common/src/time.rs
 - Age calculation: shared/wiki-common/src/aging.rs
+- ETag computation: shared/wiki-common/src/etag.rs (behind "server" feature)
+- Journaled git storage: backend/wiki-server-git/src/journal.rs
 
 ### Quality
 
 - sw-checklist: 69 passed, 0 failed
 - clippy: zero warnings (-D warnings)
 - No #[allow(clippy::...)] directives anywhere
-- 50 integration tests
+- 63 integration tests
 - All markdown validated
 - Favicons on all WASM crates
 - CLI --help with AI agent instructions section
