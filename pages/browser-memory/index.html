@@ -4,13 +4,13 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>Wiki-RS (Browser Memory)</title>
-    <link rel="stylesheet" href="/wiki-rs/browser-memory/style-8bbcc2dd9d1bcc49.css" integrity="sha384-W+c4ZfGTvpfUKqg0yXmaB682V0LDs/roeW77Fd5c9w1C/b4rM2U752p1yg7uYPyW"/>
-    <link rel="icon" href="/wiki-rs/browser-memory/favicon-6c564e307b4e6dab.ico" integrity="sha384-KQWjOzOIHjqDWYiru3vosHzm7jg3vTJdyMvOn7LU9uxuog1krOqjji9iyrx3ElQb"/>
-<link rel="modulepreload" href="/wiki-rs/browser-memory/wiki-browser-memory-6dad748f0705dbe.js" crossorigin="anonymous" integrity="sha384-4nkyzeMQ3hWpOsD5iAB8I2MsivlqI4O/jKNOQmNM0u2PDjYnkX/GG7P1GIp8uU1E"><link rel="preload" href="/wiki-rs/browser-memory/wiki-browser-memory-6dad748f0705dbe_bg.wasm" crossorigin="anonymous" integrity="sha384-if4hKCEIs8S0si9tiCOllkmVaUpR9tq1zUmPNUDL/r5AOH4vJjkn5qzEvDE3Ns4s" as="fetch" type="application/wasm"></head>
+    <link rel="stylesheet" href="/style-8bbcc2dd9d1bcc49.css" integrity="sha384-W+c4ZfGTvpfUKqg0yXmaB682V0LDs/roeW77Fd5c9w1C/b4rM2U752p1yg7uYPyW"/>
+    <link rel="icon" href="/favicon-6c564e307b4e6dab.ico" integrity="sha384-KQWjOzOIHjqDWYiru3vosHzm7jg3vTJdyMvOn7LU9uxuog1krOqjji9iyrx3ElQb"/>
+<link rel="modulepreload" href="/wiki-browser-memory-bbff22c034fd76b7.js" crossorigin="anonymous" integrity="sha384-4nkyzeMQ3hWpOsD5iAB8I2MsivlqI4O/jKNOQmNM0u2PDjYnkX/GG7P1GIp8uU1E"><link rel="preload" href="/wiki-browser-memory-bbff22c034fd76b7_bg.wasm" crossorigin="anonymous" integrity="sha384-lYVJVTVUMVeYA3hGmE9XtpKApWWe4kW8IIWghjv/KZdCbH2X9mIuE4WTk+k7BB8N" as="fetch" type="application/wasm"></head>
 <body>
 <script type="module">
-import init, * as bindings from '/wiki-rs/browser-memory/wiki-browser-memory-6dad748f0705dbe.js';
-const wasm = await init({ module_or_path: '/wiki-rs/browser-memory/wiki-browser-memory-6dad748f0705dbe_bg.wasm' });
+import init, * as bindings from '/wiki-browser-memory-bbff22c034fd76b7.js';
+const wasm = await init({ module_or_path: '/wiki-browser-memory-bbff22c034fd76b7_bg.wasm' });
 
 
 window.wasmBindings = bindings;
