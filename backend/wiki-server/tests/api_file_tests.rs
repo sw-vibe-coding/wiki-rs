@@ -324,6 +324,49 @@ async fn patch_replaces_text() {
 }
 
 #[tokio::test]
+async fn patch_accepts_unquoted_etag() {
+    let dir = tempfile::tempdir().unwrap();
+    let storage = create_storage(BackendKind::File, dir.path()).await;
+    let app = build_router(storage);
+
+    let resp = app
+        .clone()
+        .oneshot(
+            Request::get("/api/pages/MainPage")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    // ETag header is "abc..." (with quotes) — strip them for the unquoted test
+    let etag_hash = resp
+        .headers()
+        .get("ETag")
+        .unwrap()
+        .to_str()
+        .unwrap()
+        .trim_matches('"')
+        .to_string();
+
+    // Send etag WITHOUT quotes — server should accept it
+    let patch_body = format!(
+        r#"{{"etag": "{etag_hash}", "ops": [{{"op": "replace", "match": "flat file storage", "replace": "PATCHED"}}]}}"#
+    );
+    let resp = app
+        .oneshot(
+            Request::builder()
+                .method(Method::PATCH)
+                .uri("/api/pages/MainPage")
+                .header("content-type", "application/json")
+                .body(Body::from(patch_body))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(resp.status(), StatusCode::OK);
+}
+
+#[tokio::test]
 async fn patch_fails_with_stale_etag() {
     let dir = tempfile::tempdir().unwrap();
     let storage = create_storage(BackendKind::File, dir.path()).await;

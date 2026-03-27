@@ -133,7 +133,13 @@ async fn patch_page(
     };
 
     let current_etag = content_etag(&page.content);
-    if current_etag != req.etag {
+    // Accept ETag with or without HTTP quotes: "abc..." or abc...
+    let req_etag = if req.etag.starts_with('"') {
+        req.etag.clone()
+    } else {
+        format!("\"{}\"", req.etag)
+    };
+    if current_etag != req_etag {
         let conflict = ConflictResponse {
             error: "conflict".to_string(),
             message: "Page was modified by another writer".to_string(),
