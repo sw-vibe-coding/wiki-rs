@@ -36,9 +36,13 @@ fn expand_wiki_links(input: &str) -> String {
                 } else {
                     (link_content.as_str(), link_content.as_str())
                 };
-                result.push_str(&format!(
-                    r#"<a class="wiki-link" data-wiki-link="{target}" href="/wiki/{target}">{display}</a>"#
-                ));
+                result.push_str("<a class=\"wiki-link\" data-wiki-link=\"");
+                result.push_str(target);
+                result.push_str("\" href=\"#/wiki/");
+                result.push_str(target);
+                result.push_str("\">");
+                result.push_str(display);
+                result.push_str("</a>");
             } else {
                 // Unclosed link, output literally
                 result.push_str("[[");

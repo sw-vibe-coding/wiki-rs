@@ -4,7 +4,7 @@ use wiki_common::parser::render_wiki_content;
 fn test_simple_link() {
     let html = render_wiki_content("See [[MyPage]] for details");
     assert!(html.contains(r#"data-wiki-link="MyPage""#));
-    assert!(html.contains(r#"href="/wiki/MyPage""#));
+    assert!(html.contains("href=\"#/wiki/MyPage\""));
     assert!(html.contains(">MyPage</a>"));
 }
 
